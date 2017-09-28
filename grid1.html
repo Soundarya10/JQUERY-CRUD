@@ -1,0 +1,220 @@
+<!DOCTYPE Html>
+<html>
+   <head>
+      <title>Data</title>
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+      <link rel="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js">
+   </head>
+   
+   <body onload="myFunction()">
+      <div class="container">
+         <input type="button" id="addr" value="Add Data" />
+         <h5>Table Data</h5>
+         <table class="table table-bordered table-striped" id="table">
+            <tr>
+               <th>Id</th>
+               <th>Name</th>
+               <th>Gender</th>
+               <th>Phone</th>
+               <th>Address</th>
+               <th>Action</th>
+            </tr>
+         </table>
+         <div id="formdata" style="display: none;">
+            <h2> Student Form </h2>
+            <form name="form1">
+               Id :
+               <input type="number" id="Id">
+               <br/>
+               <br/> Name :
+               <input type="text" id="name">
+               <br/>
+               <br/> Gender :
+               <input type="radio" id="gender1" name="gender" value="Male">Male
+               <br/>
+               <input type="radio" id="gender2" name="gender" value="Female">Female
+               <br/>
+               <br/> Phone :
+               <input type="text" id="Phone">
+               <br/>
+               <br/> Address:
+               <textarea id="add" rows="3" cols="50">
+                </textarea>
+               <br/>
+               <br/>
+               <div class="form-actions btnzone">
+                  <button type="button" class="btn btn-success savebtn" id="savebutton">
+                  <i class="icon-check-sign" aria-hidden="false"></i> Add
+                  </button>
+                  <button type="button" class="btn btn-success savebtn" id="updateButton">
+                  <i class="icon-check-sign" aria-hidden="false"></i> Update
+                  </button>
+               </div>
+            </form>
+         </div>
+      </div>
+      <style type="text/css">
+         .container {
+         margin-left: auto;
+         margin-right: auto;
+         margin-top: 20px;
+         margin-bottom: 20px;
+         width : 70%;
+         }
+         .editrow {
+         background-color: yellow;
+         border : yellow;
+         padding: 5px;
+         margin-right: 10px;
+         }
+         .deleterow {
+         background-color: red;
+         border : red;
+         padding: 5px;
+         margin-right: 10px;
+         }
+         #addr {
+         background-color: #3090C7;
+         font-size: 16px;
+         margin: 4px 2px;
+         color: white;
+         border-radius: 10px;
+         }
+      </style>
+   </body>
+</html>
+<script type="text/javascript">
+   function editRow(){
+     $("#formdata").show();
+       $("#table").hide();
+   
+   }
+   //GET DATA
+   function myFunction() {
+       $.ajax({
+           type: 'GET',
+           url: 'http://localhost:3000/data/',
+           dataType: 'jsonp',
+           success: function(data) {
+               console.log(data);
+               var tr;
+               for (var i = 0; i < data.length; i++) {
+                   tr = $('<tr/>');
+                   tr.append("<td>" + data[i].id + "</td>");
+                   tr.append("<td>" + data[i].Name + "</td>");
+                   tr.append("<td>" + data[i].Gender + "</td>");
+                   tr.append("<td>" + data[i].Phone + "</td>");
+                   tr.append("<td>" + data[i].Address + "</td>");
+                   tr.append("<td><span class='editrow'><button id="+data[i].id+" class='editBtnClick fa fa-edit' onclick='editRow(this)'></button></span><span class='deleterow'><button id="+data[i].id+" class='deleteRowClick fa fa-trash' ></button></span>");
+                   $('#table').append(tr);
+               }
+           },
+       });
+   }
+</script>
+<script type="text/javascript">
+   //Post Data
+   $("#savebutton").click(function() {
+       var Contact = {
+           id: $("#Id").val(),
+           Name: $("#name").val(),
+           Gender: $('input[name = "gender"]:checked').val(),
+           Phone: $("#Phone").val(),
+           Address: $("#add").val()
+       };
+       console.log(Contact);
+       if (confirm("Are you sure???")) {
+           $.ajax({
+               url: "http://localhost:3000/data",
+               type: "POST",
+               data: Contact,
+               success: function(data) {
+                   alert("Data Added Successfully");
+                  $('#table tr').slice(1).remove();
+                   myFunction();
+               },
+               error: function(msg) {
+                   console.log(msg);
+                   alert(msg);
+               }
+           });
+       }
+   });
+</script>
+<script type="text/javascript">
+   //Edit Data
+   $("#updateButton").click(function() {
+       var Contact = {
+           id: $("#Id").val(),
+           Name: $("#name").val(),
+           Gender: $('input[name = "gender"]:checked').val(),
+           Phone: $("#Phone").val(),
+           Address: $("#add").val()
+       };
+       console.log(Contact);
+       var IDtoEdit = $("#Id").val();
+       if (confirm("Are you sure???")) {
+           $.ajax({
+               url: "http://localhost:3000/data/" + IDtoEdit,
+               type: "PUT",
+               data: Contact,
+               success: function(data) {
+                   alert("Data Updated Successfully");
+                   $('#table tr').slice(1).remove();
+                   myFunction();
+               },
+               error: function(msg) {
+                   console.log(msg);
+                   alert(msg);
+               }
+           });
+       }
+   });
+   
+</script>
+<script type="text/javascript">
+   //Delete Data
+   $(document).on('click', 'span.deleterow', function () {
+           //var txtdelete = $(this).closest('tr').attr('id');
+          // var txtdelete = prompt("Please enter row id:");
+           var id = $('button.deleteRowClick').attr("id");
+           console.log(id);
+           //console.log(rowtext);
+           
+           if (confirm("Are you sure???")) {
+               $.ajax({
+                   url: "http://localhost:3000/data/" + id,
+                   type: "DELETE",
+                   success: function(data) {
+                       alert("Deleted Successfully");
+                       $('#table tr').slice(1).remove();
+                       myFunction();
+                   },
+                   error: function(msg) {
+                       console.log(msg);
+                   }
+               });
+           }
+           return false;
+       });
+   
+</script>
+<!--Hiding and Showing the form-->
+<script type="text/javascript">
+   $("#addr").click(function() {
+       $("#formdata").show();
+       $("#table").hide();
+   });
+   
+   $("#savebutton").click(function() {
+       $(".container").find(":hidden").show().next();
+       $("#formdata").hide();
+   });
+   
+    $("#updateButton").click(function() {
+       $(".container").find(":hidden").show().next();
+       $("#formdata").hide();
+   });
+</script>
